@@ -23,7 +23,7 @@ func CreateScheduler() gocron.Scheduler {
 func CreateNewJob(s gocron.Scheduler, task any) gocron.Job {
 	job, err := s.NewJob(
 		gocron.DurationJob(
-			1*time.Minute,
+			1*time.Hour,
 		),
 		gocron.NewTask(
 			task,
