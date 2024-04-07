@@ -1,0 +1,5 @@
+package firebaseLib
+
+func CreateDocument() {
+
+}
