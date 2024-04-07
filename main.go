@@ -50,6 +50,10 @@ func task() {
 }
 
 func init(){
+	log.SetFormatter(&log.TextFormatter{
+		ForceColors: true,
+	})
+	
 	ctx := context.Background()
 	opt := option.WithCredentialsFile("firebaseCredential.json")
 	
@@ -73,9 +77,7 @@ func init(){
 }
 
 func main() {
-	log.SetFormatter(&log.TextFormatter{
-		ForceColors: true,
-	})
+	
 
 	s := cronjobLib.CreateScheduler()
 	job := cronjobLib.CreateNewJob(s, task)

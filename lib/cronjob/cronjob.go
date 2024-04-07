@@ -21,9 +21,10 @@ func CreateScheduler() gocron.Scheduler {
 }
 
 func CreateNewJob(s gocron.Scheduler, task any) gocron.Job {
+	duration := 1*time.Hour;
 	job, err := s.NewJob(
 		gocron.DurationJob(
-			1*time.Hour,
+			duration,
 		),
 		gocron.NewTask(
 			task,
@@ -35,7 +36,7 @@ func CreateNewJob(s gocron.Scheduler, task any) gocron.Job {
 		panic(err)
 	}
 
-	log.Info("Successfully create 1 minutes cronjob.")
+	log.Infof("Successfully create %v cronjob.", duration)
 
 	return job
 }
