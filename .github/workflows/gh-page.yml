@@ -38,7 +38,6 @@ jobs:
           ls -lah
           shopt -s dotglob
           mv frontend/* .
-          mv frontend/assert .
           rm -rf frontend
           ls -lah 
       - name: Set up Node
@@ -50,6 +49,9 @@ jobs:
         run: npm ci
       - name: Build
         run: npm run build
+      - name: Check Files
+        run: |
+          ls -lah
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Upload artifact
