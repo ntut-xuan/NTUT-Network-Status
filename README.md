@@ -5,7 +5,7 @@ A project to moniter NTUT network, show the ntut network is alive or dead, and s
 ## Progress
 
  - [x] Back-end
- - [ ] Front-end
+ - [x] Front-end
 
 ## How to execute it
 
