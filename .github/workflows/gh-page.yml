@@ -38,6 +38,7 @@ jobs:
           ls -lah
           shopt -s dotglob
           mv frontend/* .
+          mv frontend/assert .
           rm -rf frontend
           ls -lah 
       - name: Set up Node
