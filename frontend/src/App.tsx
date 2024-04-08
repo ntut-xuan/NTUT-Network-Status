@@ -20,7 +20,7 @@ function App() {
         return {
             tooltip: {},
             xAxis: {
-                data: keys
+                data: keys.reverse()
             },
             yAxis: {},
                 series: [
@@ -40,7 +40,7 @@ function App() {
         return {
             tooltip: {},
             xAxis: {
-                data: keys
+                data: keys.reverse()
             },
             yAxis: {},
             series: [
@@ -60,7 +60,7 @@ function App() {
         return {
             tooltip: {},
             xAxis: {
-                data: keys
+                data: keys.reverse()
             },
             yAxis: {},
             series: [
