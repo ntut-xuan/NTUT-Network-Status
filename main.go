@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"
@@ -36,14 +37,51 @@ func task() {
 
 	// Test the speed for each server.
 	for _, server := range targets {
-		server.PingTest(nil)
-		server.DownloadTest()
-		server.UploadTest()
-		log.Infof("Latency: %s, Download: %f, Upload: %f\n", server.Latency, server.DLSpeed, server.ULSpeed)
-		firebaseLib.UploadDocument(firestoreClient, firebaseLib.NetworkRecord{
+		// Trying to test the ping
+		err := server.PingTest(nil)
+		if err != nil {
+			firebaseLib.UploadDocument(firestoreClient, "heartbeat", firebaseLib.HeartbeatRecord{
+				Time:    time.Now(),
+				IsAlive: false,
+			})
+			log.Error("Failed on test the ping. Task shutdown.")
+			break
+		}
+
+		// Trying to test the download speed
+		err = server.DownloadTest()
+		if err != nil {
+			firebaseLib.UploadDocument(firestoreClient, "heartbeat", firebaseLib.HeartbeatRecord{
+				Time:    time.Now(),
+				IsAlive: false,
+			})
+			log.Error("Failed on test the download speed. Task shutdown.")
+			break
+		}
+
+		// Trying to test the upload speed
+		err = server.UploadTest()
+		if err != nil {
+			firebaseLib.UploadDocument(firestoreClient, "heartbeat", firebaseLib.HeartbeatRecord{
+				Time:    time.Now(),
+				IsAlive: false,
+			})
+			log.Error("Failed on test the upload speed. Task shutdown.")
+			break
+		}
+
+		log.Infof("Provide by %s, Latency: %s, Download: %f, Upload: %f\n", server.Sponsor, server.Latency, server.DLSpeed, server.ULSpeed)
+		firebaseLib.UploadDocument(firestoreClient, "records", firebaseLib.NetworkRecord{
+			Time:          time.Now(),
+			IPS:           server.Sponsor,
 			Ping:          server.Latency.Milliseconds(),
 			DownloadSpeed: server.DLSpeed,
 			UploadSpeed:   server.ULSpeed,
+		})
+		
+		firebaseLib.UploadDocument(firestoreClient, "heartbeat", firebaseLib.HeartbeatRecord{
+			Time:    time.Now(),
+			IsAlive: true,
 		})
 		server.Context.Reset()
 	}
@@ -53,7 +91,7 @@ func init(){
 	log.SetFormatter(&log.TextFormatter{
 		ForceColors: true,
 	})
-	
+
 	ctx := context.Background()
 	opt := option.WithCredentialsFile("firebaseCredential.json")
 	
@@ -77,14 +115,13 @@ func init(){
 }
 
 func main() {
-	
-
 	s := cronjobLib.CreateScheduler()
 	job := cronjobLib.CreateNewJob(s, task)
 
 	log.Info("The cron job ID is ", job.ID())
-
+	
 	s.Start()
+	job.RunNow()
 
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
