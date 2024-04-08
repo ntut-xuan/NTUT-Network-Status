@@ -23,7 +23,7 @@ type HeartbeatRecord struct {
 
 func UploadDocument(client *firestore.Client, collection string, record interface{}) (string, error) {
 	time := time.Now();
-	timeFormatString := time.Format("2006-01-02T03:00:00Z07:00")
+	timeFormatString := time.Format("2006-01-02T15:00:00Z07:00")
 	ctx := context.Background()
 	result, err := client.Collection(collection).Doc(timeFormatString).Set(ctx, record)
 
