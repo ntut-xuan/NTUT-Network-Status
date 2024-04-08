@@ -1,4 +1,4 @@
-import { faCircleNotch, faUpload, faWifi } from '@fortawesome/free-solid-svg-icons';
+import { faCircleNotch, faDownload, faUpload, faWifi } from '@fortawesome/free-solid-svg-icons';
 import { Col, Container, Navbar, Row } from 'react-bootstrap';
 import ReactECharts from 'echarts-for-react';
 import "../src/App.css"
@@ -20,16 +20,17 @@ function App() {
         return {
             tooltip: {},
             xAxis: {
-                data: keys.reverse()
+                type: "category",
+                data: keys
             },
             yAxis: {},
-                series: [
+            series: [
                 {
                     name: '延遲速度（毫秒）',
                     color: "blue",
                     type: 'line',
-                    data: Array.from(records.values()).reverse().map((record) => {
-                        return record == null ? 0 : record.Ping;
+                    data: Array.from(records.entries()).reverse().map((record) => {
+                        return record[1] == null ? [record[0], 0] : [record[0], record[1].Ping];
                     })
                 }
             ]
@@ -40,7 +41,7 @@ function App() {
         return {
             tooltip: {},
             xAxis: {
-                data: keys.reverse()
+                data: keys
             },
             yAxis: {},
             series: [
@@ -48,8 +49,8 @@ function App() {
                     name: '下載速度（mbps）',
                     type: 'line',
                     color: "green",
-                    data: Array.from(records.values()).reverse().map((record) => {
-                        return record == null ? 0 : record.DownloadSpeed;
+                    data: Array.from(records.entries()).reverse().map((record) => {
+                        return record[1] == null ? [record[0], 0] : [record[0], record[1].DownloadSpeed];
                     })
                 }
             ]
@@ -60,7 +61,7 @@ function App() {
         return {
             tooltip: {},
             xAxis: {
-                data: keys.reverse()
+                data: keys
             },
             yAxis: {},
             series: [
@@ -68,8 +69,8 @@ function App() {
                     name: '上傳速度（mbps）',
                     type: 'line',
                     color: "orange",
-                    data: Array.from(records.values()).reverse().map((record) => {
-                        return record == null ? 0 : record.UploadSpeed;
+                    data: Array.from(records.entries()).reverse().map((record) => {
+                        return record[1] == null ? [record[0], 0] : [record[0], record[1].UploadSpeed];
                     })
                 }
             ]
@@ -145,9 +146,9 @@ function App() {
                     networkTime: currentTime.format("YYYY-MM-DD HH:00"),
                     networkLatency: record.Ping + " ms",
                     networkLatencyColor: record.Ping > 200 ? "Danger" : record.Ping > 100 ? "Warning" : "Success",
-                    networkUploadSpeed: record.UploadSpeed + " mbps",
+                    networkUploadSpeed: record.UploadSpeed.toFixed(2) + " mbps",
                     networkUploadSpeedColor: record.UploadSpeed < 10 ? "Danger" : record.UploadSpeed < 20 ? "Warning" : "Success",
-                    networkDownloadSpeed: record.DownloadSpeed + " mpbs",
+                    networkDownloadSpeed: record.DownloadSpeed.toFixed(2) + " mpbs",
                     networkDownloadSpeedColor: record.DownloadSpeed < 10 ? "Danger" : record.DownloadSpeed < 20 ? "Warning" : "Success",
                 } as RecordStatusType
             }
@@ -180,7 +181,7 @@ function App() {
     }
 
     useEffect(() => {
-        setKeys(generate24HoursKey())
+        setKeys(generate24HoursKey().reverse())
     }, [])
 
     useEffect(() => {
@@ -211,7 +212,7 @@ function App() {
         <Row className='gy-3'>
             { latestNetworkStatus == null ? null : 
                 <>
-                    <Col md={3} sm={6}>
+                    <Col xxl={3} lg={6} md={6} sm={6}>
                         <StatusCard 
                             icon={faWifi} 
                             title={"網路狀態"} 
@@ -220,7 +221,7 @@ function App() {
                             status={latestNetworkStatus.networkStatusColor}
                         />
                     </Col>
-                    <Col md={3} sm={6}>
+                    <Col xxl={3} lg={6} md={6} sm={6}>
                         <StatusCard 
                             icon={faCircleNotch} 
                             title={"延遲狀態"} 
@@ -229,7 +230,7 @@ function App() {
                             status={latestNetworkStatus.networkLatencyColor}
                         />
                     </Col>
-                    <Col md={3} sm={6}>
+                    <Col xxl={3} lg={6} md={6} sm={6}>
                         <StatusCard 
                             icon={faUpload} 
                             title={"上傳速度"} 
@@ -238,9 +239,9 @@ function App() {
                             status={latestNetworkStatus.networkUploadSpeedColor}
                         />
                     </Col>
-                    <Col md={3} sm={6}>
+                    <Col xxl={3} lg={6} md={6} sm={6}>
                         <StatusCard
-                            icon={faUpload} 
+                            icon={faDownload} 
                             title={"下載速度"} 
                             result={latestNetworkStatus.networkDownloadSpeed} 
                             time={dayjs(keys[0])}

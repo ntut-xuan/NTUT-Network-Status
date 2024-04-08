@@ -31,15 +31,19 @@ export default function StatusCard(props: {
 
     return (
         <Card className='w-100 px-3 pt-3'>
-            <div className='d-flex flex-row gap-5 my-auto px-3 mx-auto'>
-            <FontAwesomeIcon className='my-auto' icon={icon} size='2x'></FontAwesomeIcon>
-            <div>
-                <p className='fs-4 m-0'> {title} </p>
-                <p className={getStatusTextColor()}> {result} </p>              
+            <div className='d-flex flex-row gap-5 my-auto px-3 mx-auto w-100'>
+                <div className="w-100 d-flex justify-content-center">
+                    <div className='my-auto'>
+                        <FontAwesomeIcon icon={icon} size='2x'></FontAwesomeIcon>
+                    </div>
+                </div>
+                <div className="w-100">
+                    <p className='fs-4 m-0'> {title} </p>
+                    <p className={getStatusTextColor()}> {result} </p>              
+                </div>
             </div>
-            </div>
             <div>
-            <p className='text-end'><small>測試時間：{testTime.format("YYYY-MM-DD HH:00")}</small></p>
+                <p className='text-end'><small>測試時間：{testTime.format("YYYY-MM-DD HH:00")}</small></p>
             </div>
         </Card>
     )

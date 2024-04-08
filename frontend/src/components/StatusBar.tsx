@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react"
 export default function StatusBar(props: {
     statuses: ("Success" | "Failed" | "Unknown")[]
 }){
-    const statuses = props.statuses.reverse();
+    const statuses = props.statuses;
     const scrollRef = useRef<HTMLDivElement | null>(null)
 
     const getStatusBackgroundColor = (status: string) => {
