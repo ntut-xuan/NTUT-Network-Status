@@ -49,9 +49,9 @@ jobs:
         run: npm ci
       - name: Build
         run: npm run build
-      - name: Check Files
+      - name: Move dist files
         run: |
-          ls -lah
+          mv dist/* .
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Upload artifact
