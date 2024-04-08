@@ -217,7 +217,7 @@ function App() {
                             icon={faWifi} 
                             title={"網路狀態"} 
                             result={latestNetworkStatus.networkStatus} 
-                            time={dayjs(keys[0])}
+                            time={latestNetworkStatus.networkTime}
                             status={latestNetworkStatus.networkStatusColor}
                         />
                     </Col>
@@ -226,7 +226,7 @@ function App() {
                             icon={faCircleNotch} 
                             title={"延遲狀態"} 
                             result={latestNetworkStatus.networkLatency} 
-                            time={dayjs(keys[0])}
+                            time={latestNetworkStatus.networkTime}
                             status={latestNetworkStatus.networkLatencyColor}
                         />
                     </Col>
@@ -235,7 +235,7 @@ function App() {
                             icon={faUpload} 
                             title={"上傳速度"} 
                             result={latestNetworkStatus.networkUploadSpeed} 
-                            time={dayjs(keys[0])} 
+                            time={latestNetworkStatus.networkTime} 
                             status={latestNetworkStatus.networkUploadSpeedColor}
                         />
                     </Col>
@@ -244,7 +244,7 @@ function App() {
                             icon={faDownload} 
                             title={"下載速度"} 
                             result={latestNetworkStatus.networkDownloadSpeed} 
-                            time={dayjs(keys[0])}
+                            time={latestNetworkStatus.networkTime}
                             status={latestNetworkStatus.networkDownloadSpeedColor}
                         />
                     </Col>

@@ -1,12 +1,11 @@
 import { IconDefinition } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Dayjs } from "dayjs";
 import { Card } from "react-bootstrap";
 
 export default function StatusCard(props: {
     title: string
     result: string
-    time: Dayjs
+    time: string
     icon: IconDefinition
     status: "Success" | "Warning" | "Danger" | "Secondary"
 }){
@@ -43,7 +42,7 @@ export default function StatusCard(props: {
                 </div>
             </div>
             <div>
-                <p className='text-end'><small>測試時間：{testTime.format("YYYY-MM-DD HH:00")}</small></p>
+                <p className='text-end'><small>測試時間：{testTime}</small></p>
             </div>
         </Card>
     )
