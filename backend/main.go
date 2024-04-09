@@ -4,6 +4,7 @@ import (
 	"context"
 	cronjobLib "nns/project/lib/cronjob"
 	firebaseLib "nns/project/lib/firebase"
+	settingLib "nns/project/lib/setting"
 	speedTestLib "nns/project/lib/speedtest"
 	"os"
 	"os/signal"
@@ -18,6 +19,7 @@ import (
 )
 
 var firestoreClient *firestore.Client;
+var setting settingLib.Setting;
 
 func task() {
 	log.Info("Start to test the network speed.")
@@ -35,12 +37,20 @@ func task() {
 		return
 	}
 
+	heartbeatCollectionName := "heartbeat"
+	recordCollectionName := "record"
+
+	if setting.Mode == "WIFI" {
+		heartbeatCollectionName = "wifi-heartbeat"
+		recordCollectionName = "wifi-record"
+	}
+
 	// Test the speed for each server.
 	for _, server := range targets {
 		// Trying to test the ping
 		err := server.PingTest(nil)
 		if err != nil {
-			firebaseLib.UploadDocument(firestoreClient, "heartbeat", firebaseLib.HeartbeatRecord{
+			firebaseLib.UploadDocument(firestoreClient, heartbeatCollectionName, firebaseLib.HeartbeatRecord{
 				Time:    time.Now(),
 				IsAlive: false,
 			})
@@ -51,7 +61,7 @@ func task() {
 		// Trying to test the download speed
 		err = server.DownloadTest()
 		if err != nil {
-			firebaseLib.UploadDocument(firestoreClient, "heartbeat", firebaseLib.HeartbeatRecord{
+			firebaseLib.UploadDocument(firestoreClient, heartbeatCollectionName, firebaseLib.HeartbeatRecord{
 				Time:    time.Now(),
 				IsAlive: false,
 			})
@@ -62,7 +72,7 @@ func task() {
 		// Trying to test the upload speed
 		err = server.UploadTest()
 		if err != nil {
-			firebaseLib.UploadDocument(firestoreClient, "heartbeat", firebaseLib.HeartbeatRecord{
+			firebaseLib.UploadDocument(firestoreClient, heartbeatCollectionName, firebaseLib.HeartbeatRecord{
 				Time:    time.Now(),
 				IsAlive: false,
 			})
@@ -71,7 +81,7 @@ func task() {
 		}
 
 		log.Infof("Provide by %s, Latency: %s, Download: %f, Upload: %f\n", server.Sponsor, server.Latency, server.DLSpeed, server.ULSpeed)
-		firebaseLib.UploadDocument(firestoreClient, "records", firebaseLib.NetworkRecord{
+		firebaseLib.UploadDocument(firestoreClient, recordCollectionName, firebaseLib.NetworkRecord{
 			Time:          time.Now(),
 			IPS:           server.Sponsor,
 			Ping:          server.Latency.Milliseconds(),
@@ -79,7 +89,7 @@ func task() {
 			UploadSpeed:   server.ULSpeed,
 		})
 		
-		firebaseLib.UploadDocument(firestoreClient, "heartbeat", firebaseLib.HeartbeatRecord{
+		firebaseLib.UploadDocument(firestoreClient, heartbeatCollectionName, firebaseLib.HeartbeatRecord{
 			Time:    time.Now(),
 			IsAlive: true,
 		})
@@ -112,6 +122,24 @@ func init(){
 	}
 
 	log.Info("Successful Initialize the application.")
+
+	settingFile, err := os.Open("settings.json")
+
+	if err != nil {
+		log.Fatal("Error on open settings.json, please check the file exists. exit.")
+	}
+
+	setting, err = settingLib.LoadSetting(settingFile)
+
+	if err != nil {
+		log.Fatal("Error on loading settings, please check the json format is correct. exit.")
+	}
+
+	err = settingFile.Close();
+
+	if err != nil {
+		log.Fatal("Error on close settings. Maybe the file already closed? exit.")
+	}
 }
 
 func main() {
