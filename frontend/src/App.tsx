@@ -13,7 +13,10 @@ import StatusCard from './components/StatusCard';
 function App() {
     const [records, setRecords] = useState<Map<string, (RecordType | null)>>(new Map())
     const [heartbeats, setHeartbeat] = useState<Map<string, (HeartbeatType | null)>>(new Map())
-    const [latestNetworkStatus, setLatestNetworkStatus] = useState<RecordStatusType | null>(null)
+    const [wifiRecords, setWiFiRecords] = useState<Map<string, (RecordType | null)>>(new Map())
+    const [wifiHeartbeats, setWiFiHeartbeats] = useState<Map<string, (HeartbeatType | null)>>(new Map())
+    const [latestCableNetworkStatus, setLatestCableNetworkStatus] = useState<RecordStatusType | null>(null)
+    const [latestWiFiNetworkStatus, setLatestWiFiNetworkStatus] = useState<RecordStatusType | null>(null)
     const [keys, setKeys] = useState<string[]>([])
 
     const getPingOption = () => {
@@ -26,14 +29,25 @@ function App() {
             yAxis: {},
             series: [
                 {
-                    name: '延遲速度（毫秒）',
-                    color: "blue",
+                    name: '有線網路延遲速度（毫秒）',
                     type: 'line',
+                    color: "red",
                     data: Array.from(records.entries()).reverse().map((record) => {
                         return record[1] == null ? [record[0], 0] : [record[0], record[1].Ping];
                     })
+                },
+                {
+                    name: '無線網路延遲速度（毫秒）',
+                    type: 'line',
+                    color: "blue",
+                    data: Array.from(wifiRecords.entries()).reverse().map((record) => {
+                        return record[1] == null ? [record[0], 0] : [record[0], record[1].Ping];
+                    })
                 }
-            ]
+            ],
+            legend: {
+                show: true
+            }
         }
     }
 
@@ -46,14 +60,25 @@ function App() {
             yAxis: {},
             series: [
                 {
-                    name: '下載速度（mbps）',
+                    name: '有線網路下載速度（mbps）',
                     type: 'line',
-                    color: "green",
+                    color: "red",
                     data: Array.from(records.entries()).reverse().map((record) => {
                         return record[1] == null ? [record[0], 0] : [record[0], record[1].DownloadSpeed];
                     })
+                },
+                {
+                    name: '無線網路下載速度（mbps）',
+                    type: 'line',
+                    color: "blue",
+                    data: Array.from(wifiRecords.entries()).reverse().map((record) => {
+                        return record[1] == null ? [record[0], 0] : [record[0], record[1].DownloadSpeed];
+                    })
                 }
-            ]
+            ],
+            legend: {
+                show: true
+            }
         }
     }
 
@@ -66,14 +91,25 @@ function App() {
             yAxis: {},
             series: [
                 {
-                    name: '上傳速度（mbps）',
+                    name: '有線網路上傳速度（mbps）',
                     type: 'line',
-                    color: "orange",
+                    color: "red",
                     data: Array.from(records.entries()).reverse().map((record) => {
                         return record[1] == null ? [record[0], 0] : [record[0], record[1].UploadSpeed];
                     })
+                },
+                {
+                    name: '無線網路上傳速度（mbps）',
+                    type: 'line',
+                    color: "blue",
+                    data: Array.from(wifiRecords.entries()).reverse().map((record) => {
+                        return record[1] == null ? [record[0], 0] : [record[0], record[1].UploadSpeed];
+                    })
                 }
-            ]
+            ],
+            legend: {
+                show: true
+            }
         }
     }
 
@@ -116,7 +152,7 @@ function App() {
         return recordMap;
     }
 
-    const getLatestNetworkStatus = () => {
+    const getLatestNetworkStatus = (heartbeats: Map<string, (HeartbeatType | null)>, records: Map<string, (RecordType | null)>) => {
         const currentTime = dayjs(Date.now())
         const currentTimeFormat = currentTime.format("YYYY-MM-DDTHH:00:00+08:00")
         
@@ -167,7 +203,7 @@ function App() {
         } as RecordStatusType
     }
 
-    const getHistoryStatuses = () => {
+    const getHistoryStatuses = (heartbeats: Map<string, (HeartbeatType | null)>) => {
         const statuses = [] as ("Success" | "Failed" | "Unknown")[]
         for(let key of keys){
             const heartbeat = heartbeats.get(key)
@@ -197,8 +233,24 @@ function App() {
     }, [app])
 
     useEffect(() => {
-        setLatestNetworkStatus(getLatestNetworkStatus())
-    }, [records])
+        fetchRecordsAsync("wifi-record").then((recordMap: Map<string, RecordType>) => {
+            setWiFiRecords(recordMap)
+        })
+    }, [app])
+
+    useEffect(() => {
+        fetchRecordsAsync("wifi-heartbeat").then((heartbeat: Map<string, HeartbeatType>) => {
+            setWiFiHeartbeats(heartbeat)
+        })
+    }, [app])
+
+    useEffect(() => {
+        setLatestCableNetworkStatus(getLatestNetworkStatus(heartbeats, records))
+    }, [heartbeats, records])
+
+    useEffect(() => {
+        setLatestWiFiNetworkStatus(getLatestNetworkStatus(wifiHeartbeats, wifiRecords))
+    }, [wifiHeartbeats, wifiRecords])
 
   return (
     <>
@@ -210,42 +262,90 @@ function App() {
     <Container className='py-5'>
         <h2 className='mb-5 text-center'>即時狀態</h2>
         <Row className='gy-3'>
-            { latestNetworkStatus == null ? null : 
+            { latestCableNetworkStatus == null ? null : 
                 <>
                     <Col xxl={3} lg={6} md={6} sm={6}>
                         <StatusCard 
                             icon={faWifi} 
-                            title={"網路狀態"} 
-                            result={latestNetworkStatus.networkStatus} 
-                            time={latestNetworkStatus.networkTime}
-                            status={latestNetworkStatus.networkStatusColor}
+                            iconColor={"Danger"}
+                            title={"有線網路狀態"} 
+                            result={latestCableNetworkStatus.networkStatus} 
+                            time={latestCableNetworkStatus.networkTime}
+                            status={latestCableNetworkStatus.networkStatusColor}
                         />
                     </Col>
                     <Col xxl={3} lg={6} md={6} sm={6}>
                         <StatusCard 
                             icon={faCircleNotch} 
-                            title={"延遲狀態"} 
-                            result={latestNetworkStatus.networkLatency} 
-                            time={latestNetworkStatus.networkTime}
-                            status={latestNetworkStatus.networkLatencyColor}
+                            iconColor={"Danger"}
+                            title={"有線網路延遲狀態"} 
+                            result={latestCableNetworkStatus.networkLatency} 
+                            time={latestCableNetworkStatus.networkTime}
+                            status={latestCableNetworkStatus.networkLatencyColor}
                         />
                     </Col>
                     <Col xxl={3} lg={6} md={6} sm={6}>
                         <StatusCard 
                             icon={faUpload} 
-                            title={"上傳速度"} 
-                            result={latestNetworkStatus.networkUploadSpeed} 
-                            time={latestNetworkStatus.networkTime} 
-                            status={latestNetworkStatus.networkUploadSpeedColor}
+                            iconColor={"Danger"}
+                            title={"有線網路上傳速度"} 
+                            result={latestCableNetworkStatus.networkUploadSpeed} 
+                            time={latestCableNetworkStatus.networkTime} 
+                            status={latestCableNetworkStatus.networkUploadSpeedColor}
                         />
                     </Col>
                     <Col xxl={3} lg={6} md={6} sm={6}>
                         <StatusCard
                             icon={faDownload} 
-                            title={"下載速度"} 
-                            result={latestNetworkStatus.networkDownloadSpeed} 
-                            time={latestNetworkStatus.networkTime}
-                            status={latestNetworkStatus.networkDownloadSpeedColor}
+                            iconColor={"Danger"}
+                            title={"有線網路下載速度"} 
+                            result={latestCableNetworkStatus.networkDownloadSpeed} 
+                            time={latestCableNetworkStatus.networkTime}
+                            status={latestCableNetworkStatus.networkDownloadSpeedColor}
+                        />
+                    </Col>
+                </>
+            }
+            { latestWiFiNetworkStatus == null ? null : 
+                <>
+                    <Col xxl={3} lg={6} md={6} sm={6}>
+                        <StatusCard 
+                            icon={faWifi} 
+                            iconColor={"Primary"}
+                            title={"無線網路狀態"} 
+                            result={latestWiFiNetworkStatus.networkStatus} 
+                            time={latestWiFiNetworkStatus.networkTime}
+                            status={latestWiFiNetworkStatus.networkStatusColor}
+                        />
+                    </Col>
+                    <Col xxl={3} lg={6} md={6} sm={6}>
+                        <StatusCard 
+                            icon={faCircleNotch} 
+                            iconColor={"Primary"}
+                            title={"無線網路延遲狀態"} 
+                            result={latestWiFiNetworkStatus.networkLatency} 
+                            time={latestWiFiNetworkStatus.networkTime}
+                            status={latestWiFiNetworkStatus.networkLatencyColor}
+                        />
+                    </Col>
+                    <Col xxl={3} lg={6} md={6} sm={6}>
+                        <StatusCard 
+                            icon={faUpload} 
+                            iconColor={"Primary"}
+                            title={"無線網路上傳速度"} 
+                            result={latestWiFiNetworkStatus.networkUploadSpeed} 
+                            time={latestWiFiNetworkStatus.networkTime} 
+                            status={latestWiFiNetworkStatus.networkUploadSpeedColor}
+                        />
+                    </Col>
+                    <Col xxl={3} lg={6} md={6} sm={6}>
+                        <StatusCard
+                            icon={faDownload} 
+                            iconColor={"Primary"}
+                            title={"無線網路下載速度"} 
+                            result={latestWiFiNetworkStatus.networkDownloadSpeed} 
+                            time={latestWiFiNetworkStatus.networkTime}
+                            status={latestWiFiNetworkStatus.networkDownloadSpeedColor}
                         />
                     </Col>
                 </>
@@ -257,7 +357,7 @@ function App() {
             { heartbeats.size == 0 ? null : 
                 <Container>
                     <h4 className='text-center m-0'> 24 小時內歷史觀測狀態</h4>
-                    <StatusBar statuses={getHistoryStatuses()}></StatusBar>
+                    <StatusBar cableStatuses={getHistoryStatuses(heartbeats)} wifiStatuses={getHistoryStatuses(wifiHeartbeats)}></StatusBar>
                 </Container>
             }
         <div>

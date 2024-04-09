@@ -1,10 +1,13 @@
 import { useEffect, useRef } from "react"
 
 export default function StatusBar(props: {
-    statuses: ("Success" | "Failed" | "Unknown")[]
+    cableStatuses: ("Success" | "Failed" | "Unknown")[]
+    wifiStatuses: ("Success" | "Failed" | "Unknown")[]
 }){
-    const statuses = props.statuses;
-    const scrollRef = useRef<HTMLDivElement | null>(null)
+    const cableStatuses = props.cableStatuses;
+    const wifiStatuses = props.wifiStatuses;
+    const cableScrollRef = useRef<HTMLDivElement | null>(null)
+    const wifiScrollRef = useRef<HTMLDivElement | null>(null)
 
     const getStatusBackgroundColor = (status: string) => {
         if(status == "Success"){
@@ -31,28 +34,60 @@ export default function StatusBar(props: {
     }
 
     useEffect(() => {
-        if(scrollRef.current != null){
-          scrollRef.current.scrollLeft = scrollRef.current.scrollWidth
+        if(cableScrollRef.current != null){
+            cableScrollRef.current.scrollLeft = cableScrollRef.current.scrollWidth
         }
-    }, [scrollRef])
+    }, [cableScrollRef])
+
+    useEffect(() => {
+        if(wifiScrollRef.current != null){
+            wifiScrollRef.current.scrollLeft = wifiScrollRef.current.scrollWidth
+        }
+    }, [wifiScrollRef])
 
     return (
-        <div className='border rounded p-5 my-5 w-100'>
-            <div className='w-100 d-flex flex-row gap-2 overflow-x-auto status-bar' ref={scrollRef}>
+        <div className='border rounded p-5 my-5 w-100 d-flex flex-column gap-3'>
+            <div className='w-100 d-flex flex-row gap-2 status-bar'>
+                <div className="px-3 my-auto">
+                    <p className="text-nowrap m-0"> 有線網路</p>
+                </div>
+                <div className="overflow-x-auto d-flex flex-row gap-2 w-100" ref={cableScrollRef}>
                 {
-                    statuses.slice(0, statuses.length - 1).map((status) => {
+                    cableStatuses.slice(0, cableStatuses.length - 1).map((status) => {
                         return (
                             <div className={`px-1 px-md-2 ${getStatusBackgroundColor(status)} py-3 rounded`}></div>
                         )
                     })
                 }
                 {
-                    <div className={`px-1 px-md-2 ${getStatusBackgroundColor(statuses.slice(-1)[0])} py-3 rounded w-100`}>
+                    <div className={`px-1 px-md-2 ${getStatusBackgroundColor(cableStatuses.slice(-1)[0])} py-3 rounded w-100`}>
                         <p className='m-0 text-white text-center d-md-block d-lg-block d-none'>
-                            <strong>{getStatusText(statuses.slice(-1)[0])}</strong>
+                            <strong>{getStatusText(cableStatuses.slice(-1)[0])}</strong>
                         </p>
                     </div>
                 }
+                </div>
+            </div>
+            <div className='w-100 d-flex flex-row gap-2 status-bar'>
+                <div className="px-3 my-auto">
+                    <p className="text-nowrap m-0"> 無線網路</p>
+                </div>
+                <div className="overflow-x-auto d-flex flex-row gap-2 w-100" ref={wifiScrollRef}>
+                {
+                    wifiStatuses.slice(0, wifiStatuses.length - 1).map((status) => {
+                        return (
+                            <div className={`px-1 px-md-2 ${getStatusBackgroundColor(status)} py-3 rounded`}></div>
+                        )
+                    })
+                }
+                {
+                    <div className={`px-1 px-md-2 ${getStatusBackgroundColor(wifiStatuses.slice(-1)[0])} py-3 rounded w-100`}>
+                        <p className='m-0 text-white text-center d-md-block d-lg-block d-none'>
+                            <strong>{getStatusText(wifiStatuses.slice(-1)[0])}</strong>
+                        </p>
+                    </div>
+                }
+                </div>
             </div>
         </div>
     )
