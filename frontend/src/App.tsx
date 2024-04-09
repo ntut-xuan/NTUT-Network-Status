@@ -203,14 +203,48 @@ function App() {
         } as RecordStatusType
     }
 
-    const getHistoryStatuses = (heartbeats: Map<string, (HeartbeatType | null)>) => {
-        const statuses = [] as ("Success" | "Failed" | "Unknown")[]
+    const pingStatus = (ping: number) => {
+        if(ping >= 200){
+            return "Danger"
+        }else if(ping >= 100){
+            return "Warning"
+        }else{
+            return "Success"
+        }
+    }
+
+    const loadStatus = (upload: number) => {
+        if(upload <= 10){
+            return "Danger"
+        }else if(upload <= 20){
+            return "Warning"
+        }else{
+            return "Success"
+        }
+    }
+
+    const getHistoryStatuses = (heartbeats: Map<string, (HeartbeatType | null)>, records: Map<string, (RecordType | null)>) => {
+        const statuses = [] as ("Success" | "Danger" | "Warning" | "Unknown")[]
         for(let key of keys){
             const heartbeat = heartbeats.get(key)
-            if(heartbeat != null){
-                statuses.push(heartbeat.IsAlive ? "Success" : "Failed")
-            }else{
+            const record = records.get(key)
+            if(heartbeat == null){
                 statuses.push("Unknown")
+                continue
+            }
+            if(heartbeat != null && heartbeat.IsAlive == false){
+                statuses.push("Danger")
+                continue
+            }
+            if(heartbeat != null && record != null && (pingStatus(record.Ping) == "Danger" || loadStatus(record.DownloadSpeed) == "Danger" || loadStatus(record.UploadSpeed) == "Danger")){
+                statuses.push("Danger")
+                continue
+            }else if(heartbeat != null && record != null && (pingStatus(record.Ping) == "Warning" || loadStatus(record.DownloadSpeed) == "Warning" || loadStatus(record.UploadSpeed) == "Warning")){
+                statuses.push("Warning")
+                continue
+            }else{
+                statuses.push("Success")
+                continue
             }
         }
         return statuses
@@ -357,7 +391,7 @@ function App() {
             { heartbeats.size == 0 ? null : 
                 <Container>
                     <h4 className='text-center m-0'> 24 小時內歷史觀測狀態</h4>
-                    <StatusBar cableStatuses={getHistoryStatuses(heartbeats)} wifiStatuses={getHistoryStatuses(wifiHeartbeats)}></StatusBar>
+                    <StatusBar cableStatuses={getHistoryStatuses(heartbeats, records)} wifiStatuses={getHistoryStatuses(wifiHeartbeats, wifiRecords)}></StatusBar>
                 </Container>
             }
         <div>

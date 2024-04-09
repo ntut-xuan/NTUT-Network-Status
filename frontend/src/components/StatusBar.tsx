@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react"
 
 export default function StatusBar(props: {
-    cableStatuses: ("Success" | "Failed" | "Unknown")[]
-    wifiStatuses: ("Success" | "Failed" | "Unknown")[]
+    cableStatuses: ("Success" | "Danger" | "Warning" | "Unknown")[]
+    wifiStatuses: ("Success" | "Danger" | "Warning" | "Unknown")[]
 }){
     const cableStatuses = props.cableStatuses;
     const wifiStatuses = props.wifiStatuses;
@@ -13,7 +13,10 @@ export default function StatusBar(props: {
         if(status == "Success"){
             return "bg-success"
         }
-        if(status == "Failed"){
+        if(status == "Warning"){
+            return "bg-warning"
+        }
+        if(status == "Danger"){
             return "bg-danger"
         }
         if(status == "Unknown"){
@@ -25,11 +28,14 @@ export default function StatusBar(props: {
         if(status == "Success"){
             return "網路狀態正常"
         }
-        if(status == "Failed"){
-            return "網路測速失敗"
+        if(status == "Warning"){
+            return "網路緩慢"
+        }
+        if(status == "Danger"){
+            return "網路極慢"
         }
         if(status == "Unknown"){
-            return "正在測速或未運行測速"
+            return "正在測速、未運行測速、或網路已斷線"
         }
     }
 
