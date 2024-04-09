@@ -184,7 +184,7 @@ function App() {
                     networkLatencyColor: record.Ping > 200 ? "Danger" : record.Ping > 100 ? "Warning" : "Success",
                     networkUploadSpeed: record.UploadSpeed.toFixed(2) + " mbps",
                     networkUploadSpeedColor: record.UploadSpeed < 10 ? "Danger" : record.UploadSpeed < 20 ? "Warning" : "Success",
-                    networkDownloadSpeed: record.DownloadSpeed.toFixed(2) + " mpbs",
+                    networkDownloadSpeed: record.DownloadSpeed.toFixed(2) + " mbps",
                     networkDownloadSpeedColor: record.DownloadSpeed < 10 ? "Danger" : record.DownloadSpeed < 20 ? "Warning" : "Success",
                 } as RecordStatusType
             }
